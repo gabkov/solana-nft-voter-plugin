@@ -102,8 +102,6 @@ impl NftVoterTest {
     pub async fn start_new() -> Self {
         let mut program_test = ProgramTest::default();
 
-        msg!("FUUUCK");
-
         NftVoterTest::add_program(&mut program_test);
         GovernanceTest::add_program(&mut program_test);
         TokenMetadataTest::add_program(&mut program_test);
