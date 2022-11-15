@@ -12,7 +12,7 @@ use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 
 use gpl_nft_voter::state::{
-    get_nft_vote_record_address, get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
+    get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
 };
 
 use solana_program_test::ProgramTest;

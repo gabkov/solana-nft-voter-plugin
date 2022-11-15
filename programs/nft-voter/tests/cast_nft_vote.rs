@@ -1,8 +1,6 @@
 use crate::program_test::nft_voter_test::ConfigureCollectionArgs;
-use anchor_lang::ToAccountInfo;
 use gpl_nft_voter::error::NftVoterError;
 use gpl_nft_voter::state::*;
-use gpl_nft_voter::tools::token_metadata::get_token_metadata_for_mint;
 use program_test::token_metadata_test::CreateNftArgs;
 use program_test::{
     nft_voter_test::*,
