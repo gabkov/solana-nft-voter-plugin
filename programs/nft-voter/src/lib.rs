@@ -41,9 +41,9 @@ pub mod nft_voter {
         log_version();
         instructions::update_voter_weight_record(ctx, voter_weight_action)
     }
-    pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
+    pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>, collection: Pubkey) -> Result<()> {
         log_version();
-        instructions::relinquish_nft_vote(ctx)
+        instructions::relinquish_nft_vote(ctx, collection)
     }
     pub fn configure_collection(
         ctx: Context<ConfigureCollection>,

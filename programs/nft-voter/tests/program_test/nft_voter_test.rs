@@ -370,10 +370,14 @@ impl NftVoterTest {
         proposal_cookie: &ProposalCookie,
         voter_cookie: &WalletCookie,
         voter_token_owner_record_cookie: &TokenOwnerRecordCookie,
-        nft_vote_record_cookies: &Vec<NftVoteRecordCookie>,
+        nft_cookies: &[&NftCookie],
+        nft_collection_cookie: &NftCollectionCookie,
+        voted_nfts_cookie: &VotedNftsCookie,
     ) -> Result<(), TransportError> {
         let data =
-            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {});
+            anchor_lang::InstructionData::data(&gpl_nft_voter::instruction::RelinquishNftVote {
+                collection: nft_collection_cookie.mint
+            });
 
         let vote_record_key = vote_record::get_vote_record_address(
             &self.governance.program_id,
@@ -390,12 +394,15 @@ impl NftVoterTest {
             beneficiary: self.bench.payer.pubkey(),
             voter_token_owner_record: voter_token_owner_record_cookie.address,
             voter_authority: voter_cookie.address,
+            voted_nfts: voted_nfts_cookie.address,
+            
         };
 
         let mut account_metas = anchor_lang::ToAccountMetas::to_account_metas(&accounts, None);
 
-        for nft_vote_record_cookie in nft_vote_record_cookies {
-            account_metas.push(AccountMeta::new(nft_vote_record_cookie.address, false));
+        for nft_cookie in nft_cookies {
+            account_metas.push(AccountMeta::new(nft_cookie.address, false));
+            account_metas.push(AccountMeta::new(nft_cookie.metadata, false));
         }
 
         let relinquish_nft_vote_ix = Instruction {
@@ -589,7 +596,6 @@ impl NftVoterTest {
         for nft_cookie in nft_cookies {
             account_metas.push(AccountMeta::new_readonly(nft_cookie.address, false));
             account_metas.push(AccountMeta::new_readonly(nft_cookie.metadata, false));
-
         }
 
         let cast_nft_vote_ix = Instruction {

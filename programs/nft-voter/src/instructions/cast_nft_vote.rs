@@ -3,7 +3,7 @@ use crate::{state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use itertools::Itertools;
-
+use bitvec::prelude::*;
 
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
@@ -93,21 +93,19 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         )?;
 
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
-        
-        {
-            use bitvec::prelude::*;
-            let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
 
-            let voter_index = nft_index.checked_sub(1)
-                .ok_or(NftVoterError::ArithMeticError)? as usize;
+            
+        let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
 
-            if voted[voter_index] {
-                return Err(NftVoterError::NftAlreadyVoted.into());
-            }
+        let voter_index = nft_index.checked_sub(1)
+            .ok_or(NftVoterError::ArithMeticError)? as usize;
 
-            voted.set(voter_index, true);
+        if voted[voter_index] {
+            return Err(NftVoterError::NftAlreadyVoted.into());
         }
 
+        voted.set(voter_index, true);
+        
     }
 
     if voter_weight_record.weight_action_target == Some(proposal)

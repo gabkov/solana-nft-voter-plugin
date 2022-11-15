@@ -1,10 +1,11 @@
 use crate::error::NftVoterError;
+use crate::state::Registrar;
 use crate::state::*;
-use crate::state::{get_nft_vote_record_data_for_proposal_and_token_owner, Registrar};
 use crate::tools::governance::get_vote_record_address;
 use anchor_lang::prelude::*;
+use bitvec::prelude::*;
+use itertools::Itertools;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
-use spl_governance_tools::account::dispose_account;
 
 /// Disposes NftVoteRecord and recovers the rent from the accounts   
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
@@ -17,6 +18,8 @@ use spl_governance_tools::account::dispose_account;
 /// Once the spl-governance instruction is supported then nft-voter plugin should implement revoke_nft_vote instruction
 /// to supply the required VoteWeightRecord and delete relevant NftVoteRecords
 #[derive(Accounts)]
+#[instruction(collection: Pubkey)]
+
 pub struct RelinquishNftVote<'info> {
     /// The NFT voting Registrar
     pub registrar: Account<'info, Registrar>,
@@ -60,9 +63,16 @@ pub struct RelinquishNftVote<'info> {
     /// CHECK: The beneficiary who receives lamports from the disposed NftVoterRecord accounts can be any account
     #[account(mut)]
     pub beneficiary: UncheckedAccount<'info>,
+
+    #[account(
+        mut,
+        constraint = voted_nfts.proposal == proposal.key() @ NftVoterError::InvalidVotedNftsProposal,
+        constraint = voted_nfts.collection == collection @ NftVoterError::InvalidVotedNftsCollection,
+    )]
+    pub voted_nfts: Account<'info, VotedNfts>,
 }
 
-pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
+pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>, _collection: Pubkey) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
 
@@ -127,16 +137,27 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>) -> Result<()> {
         return err!(NftVoterError::VoterWeightRecordMustBeExpired);
     }
 
-    // Dispose all NftVoteRecords
-    for nft_vote_record_info in ctx.remaining_accounts.iter() {
-        // Ensure NftVoteRecord is for the given Proposal and TokenOwner
-        let _nft_vote_record = get_nft_vote_record_data_for_proposal_and_token_owner(
-            nft_vote_record_info,
-            &ctx.accounts.proposal.key(),
+    let voted_nfts = &mut ctx.accounts.voted_nfts;
+
+    // Ensure all voting nfts in the batch are unique
+    let mut unique_nft_mints = vec![];
+    // Set the votes back to 0 in the bitmap
+    for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
+        let (_, _, nft_index) = resolve_nft_vote_weight_and_mint_and_nft_index(
+            registrar,
             &governing_token_owner,
+            nft_info,
+            nft_metadata_info,
+            &mut unique_nft_mints,
         )?;
 
-        dispose_account(nft_vote_record_info, &ctx.accounts.beneficiary);
+        let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
+
+        let voter_index = nft_index
+            .checked_sub(1)
+            .ok_or(NftVoterError::ArithMeticError)? as usize;
+
+        voted.set(voter_index, false);
     }
 
     // Reset VoterWeightRecord and set expiry to expired to prevent it from being used
