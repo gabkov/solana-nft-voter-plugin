@@ -50,7 +50,7 @@ pub fn update_voter_weight_record(
     let mut unique_nft_mints = vec![];
 
     for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
-        let (nft_vote_weight, _) = resolve_nft_vote_weight_and_mint(
+        let (nft_vote_weight, _, _) = resolve_nft_vote_weight_and_mint_and_nft_index(
             registrar,
             governing_token_owner,
             nft_info,

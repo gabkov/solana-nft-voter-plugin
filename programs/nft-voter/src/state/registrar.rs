@@ -1,7 +1,7 @@
 use crate::{
     error::NftVoterError,
     id,
-    state::{CollectionConfig, VoterWeightRecord},
+    state::{CollectionConfig, VoterWeightRecord, voted_nfts::index_from_nft_name},
     tools::{
         anchor::DISCRIMINATOR_SIZE, spl_token::get_spl_token_amount,
         token_metadata::get_token_metadata_for_mint,
@@ -98,13 +98,13 @@ pub fn resolve_governing_token_owner(
 }
 
 /// Resolves vote weight and voting mint for the given NFT
-pub fn resolve_nft_vote_weight_and_mint(
+pub fn resolve_nft_vote_weight_and_mint_and_nft_index(
     registrar: &Registrar,
     governing_token_owner: &Pubkey,
     nft_info: &AccountInfo,
     nft_metadata_info: &AccountInfo,
     unique_nft_mints: &mut Vec<Pubkey>,
-) -> Result<(u64, Pubkey)> {
+) -> Result<(u64, Pubkey, u64)> {
     let nft_owner = get_spl_token_owner(nft_info)?;
 
     // voter_weight_record.governing_token_owner must be the owner of the NFT
@@ -130,14 +130,14 @@ pub fn resolve_nft_vote_weight_and_mint(
 
     // The NFT must have a collection and the collection must be verified
     let collection = nft_metadata
-        .collection
+        .collection.as_ref()
         .ok_or(NftVoterError::MissingMetadataCollection)?;
 
     require!(collection.verified, NftVoterError::CollectionMustBeVerified);
 
     let collection_config = registrar.get_collection_config(collection.key)?;
 
-    Ok((collection_config.weight, nft_mint))
+    Ok((collection_config.weight, nft_mint, index_from_nft_name(&nft_metadata)?))
 }
 
 #[cfg(test)]

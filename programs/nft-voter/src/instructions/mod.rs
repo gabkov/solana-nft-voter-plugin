@@ -18,3 +18,6 @@ mod relinquish_nft_vote;
 
 pub use cast_nft_vote::*;
 mod cast_nft_vote;
+
+pub use create_vote_state_for_proposal::*;
+mod create_vote_state_for_proposal;

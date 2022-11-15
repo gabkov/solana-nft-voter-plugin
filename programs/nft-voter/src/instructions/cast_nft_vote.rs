@@ -1,9 +1,9 @@
 use crate::error::NftVoterError;
-use crate::{id, state::*};
+use crate::{state::*};
 use anchor_lang::prelude::*;
 use anchor_lang::Accounts;
 use itertools::Itertools;
-use spl_governance_tools::account::create_and_serialize_account_signed;
+
 
 /// Casts NFT vote. The NFTs used for voting are tracked using NftVoteRecord accounts
 /// This instruction updates VoterWeightRecord which is valid for the current Slot and the target Proposal only
@@ -16,7 +16,7 @@ use spl_governance_tools::account::create_and_serialize_account_signed;
 /// VoteChoice is recorded by spl-gov in VoteRecord and this CastNftVote only tracks voting NFTs
 ///
 #[derive(Accounts)]
-#[instruction(proposal: Pubkey)]
+#[instruction(proposal: Pubkey, collection: Pubkey)]
 pub struct CastNftVote<'info> {
     /// The NFT voting registrar
     pub registrar: Account<'info, Registrar>,
@@ -38,6 +38,13 @@ pub struct CastNftVote<'info> {
     /// CHECK: Owned by spl-governance instance specified in registrar.governance_program_id
     voter_token_owner_record: UncheckedAccount<'info>,
 
+    #[account(
+        mut,
+        constraint = voted_nfts.proposal == proposal @ NftVoterError::InvalidVotedNftsProposal,
+        constraint = voted_nfts.collection == collection @ NftVoterError::InvalidVotedNftsCollection,
+    )]
+    pub voted_nfts: Account<'info, VotedNfts>,
+
     /// Authority of the voter who casts the vote
     /// It can be either governing_token_owner or its delegate and must sign this instruction
     pub voter_authority: Signer<'info>,
@@ -53,6 +60,7 @@ pub struct CastNftVote<'info> {
 pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
     ctx: Context<'a, 'b, 'c, 'info, CastNftVote<'info>>,
     proposal: Pubkey,
+    _collection: Pubkey
 ) -> Result<()> {
     let registrar = &ctx.accounts.registrar;
     let voter_weight_record = &mut ctx.accounts.voter_weight_record;
@@ -64,17 +72,19 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         voter_weight_record,
     )?;
 
+    let voted_nfts = &mut ctx.accounts.voted_nfts;
+    
+
     let mut voter_weight = 0u64;
 
     // Ensure all voting nfts in the batch are unique
     let mut unique_nft_mints = vec![];
 
-    let rent = Rent::get()?;
 
-    for (nft_info, nft_metadata_info, nft_vote_record_info) in
+    for (nft_info, nft_metadata_info) in
         ctx.remaining_accounts.iter().tuples()
     {
-        let (nft_vote_weight, nft_mint) = resolve_nft_vote_weight_and_mint(
+        let (nft_vote_weight, _, nft_index) = resolve_nft_vote_weight_and_mint_and_nft_index(
             registrar,
             &governing_token_owner,
             nft_info,
@@ -83,40 +93,22 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         )?;
 
         voter_weight = voter_weight.checked_add(nft_vote_weight as u64).unwrap();
+        
+        {
+            use bitvec::prelude::*;
+            let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
 
-        // Create NFT vote record to ensure the same NFT hasn't been already used for voting
-        // Note: The correct PDA of the NftVoteRecord is validated in create_and_serialize_account_signed
-        // It ensures the NftVoteRecord is for ('nft-vote-record',proposal,nft_mint) seeds
-        require!(
-            nft_vote_record_info.data_is_empty(),
-            NftVoterError::NftAlreadyVoted
-        );
+            let voter_index = nft_index.checked_sub(1)
+                .ok_or(NftVoterError::ArithMeticError)? as usize;
 
-        // Note: proposal.governing_token_mint must match voter_weight_record.governing_token_mint
-        // We don't verify it here because spl-gov does the check in cast_vote
-        // and it would reject voter_weight_record if governing_token_mint doesn't match
+            if voted[voter_index] {
+                msg!("fos");
+                return Err(NftVoterError::NftAlreadyVoted.into());
+            }
 
-        // Note: Once the NFT plugin is enabled the governing_token_mint is used only as identity
-        // for the voting population and the tokens of that mint are no longer used
-        let nft_vote_record = NftVoteRecord {
-            account_discriminator: NftVoteRecord::ACCOUNT_DISCRIMINATOR,
-            proposal,
-            nft_mint,
-            governing_token_owner,
-            reserved: [0; 8],
-        };
+            voted.set(voter_index, true);
+        }
 
-        // Anchor doesn't natively support dynamic account creation using remaining_accounts
-        // and we have to take it on the manual drive
-        create_and_serialize_account_signed(
-            &ctx.accounts.payer.to_account_info(),
-            nft_vote_record_info,
-            &nft_vote_record,
-            &get_nft_vote_record_seeds(&proposal, &nft_mint),
-            &id(),
-            &ctx.accounts.system_program.to_account_info(),
-            &rent,
-        )?;
     }
 
     if voter_weight_record.weight_action_target == Some(proposal)

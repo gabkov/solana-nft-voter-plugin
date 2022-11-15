@@ -26,6 +26,7 @@ solana-program = "1.9.13"
 spl-governance = { version = "2.2.2", features = ["no-entrypoint"] }
 spl-governance-tools=  "0.1.2"
 spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
+bitvec = "1.0.0"
 
 [dev-dependencies]
 borsh = "0.9.1"

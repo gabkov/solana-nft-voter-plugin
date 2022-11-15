@@ -11,7 +11,7 @@ pub mod tools;
 
 use crate::state::*;
 
-declare_id!("GnftV5kLjd67tvHpNGyodwWveEKivz3ZWvvE3Z4xi2iw");
+declare_id!("DXWGDLSxbeycBJQX2Z4sdDu8TbcqNMzHU25UtWdHUwQF");
 
 #[program]
 pub mod nft_voter {
@@ -53,13 +53,24 @@ pub mod nft_voter {
         log_version();
         instructions::configure_collection(ctx, weight, size)
     }
+    
+    pub fn create_vote_state_for_proposal(
+        ctx: Context<CreateVoteStateForProposal>,
+        proposal: Pubkey, 
+        collection: Pubkey, 
+        collection_size: u32
+    ) -> Result<()> {
+        log_version();
+        instructions::create_vote_state_for_proposal(ctx, proposal, collection, collection_size)
+    }
 
     pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
         ctx: Context<'a, 'b, 'c, 'info, CastNftVote<'info>>,
         proposal: Pubkey,
+        collection: Pubkey
     ) -> Result<()> {
         log_version();
-        instructions::cast_nft_vote(ctx, proposal)
+        instructions::cast_nft_vote(ctx, proposal, collection)
     }
 }
 

@@ -7,6 +7,9 @@ pub mod collection_config;
 pub use nft_vote_record::*;
 pub mod nft_vote_record;
 
+pub use voted_nfts::*;
+pub mod voted_nfts;
+
 pub mod max_voter_weight_record;
 
 pub use voter_weight_record::*;

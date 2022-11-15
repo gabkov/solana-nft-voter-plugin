@@ -76,4 +76,19 @@ pub enum NftVoterError {
 
     #[msg("Cannot configure collection with voting proposals")]
     CannotConfigureCollectionWithVotingProposals,
+
+    #[msg("Invalid VotedNfts propsal")]
+    InvalidVotedNftsProposal,
+
+    #[msg("Invalid VotedNfts collection")]
+    InvalidVotedNftsCollection,
+    
+    #[msg("Invalid Metadata name")]
+    InvalidMetadataName,
+
+    #[msg("Arithmetic error")]
+    ArithMeticError,
+
+    #[msg("Vote State Already Initialized for this collection and proposal")]
+    VoteStateAlreadyInitialized
 }

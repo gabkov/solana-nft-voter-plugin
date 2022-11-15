@@ -164,7 +164,89 @@ impl TokenMetadataTest {
         ];
         let (metadata_key, _) = Pubkey::find_program_address(metadata_seeds, &self.program_id);
 
-        let name = "TestNFT".to_string();
+        let name = "TestNFT #0010".to_string();
+        let symbol = "NFT".to_string();
+        let uri = "URI".to_string();
+
+        let collection = Collection {
+            verified: false,
+            key: nft_collection_cookie.mint,
+        };
+
+        let create_metadata_ix = mpl_token_metadata::instruction::create_metadata_accounts_v2(
+            self.program_id,
+            metadata_key,
+            mint_cookie.address,
+            mint_cookie.mint_authority.pubkey(),
+            self.bench.payer.pubkey(),
+            self.bench.payer.pubkey(),
+            name,
+            symbol,
+            uri,
+            None,
+            10,
+            false,
+            false,
+            Some(collection),
+            None,
+        );
+
+        self.bench
+            .process_transaction(&[create_metadata_ix], Some(&[&mint_cookie.mint_authority]))
+            .await?;
+
+        if verify_collection {
+            let verify_collection = mpl_token_metadata::instruction::verify_collection(
+                self.program_id,
+                metadata_key,
+                self.bench.payer.pubkey(),
+                self.bench.payer.pubkey(),
+                nft_collection_cookie.mint,
+                nft_collection_cookie.metadata,
+                nft_collection_cookie.master_edition,
+                None,
+            );
+
+            self.bench
+                .process_transaction(&[verify_collection], None)
+                .await?;
+        }
+
+        Ok(NftCookie {
+            address: nft_account_cookie.address,
+            metadata: metadata_key,
+            mint_cookie,
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn with_nft_v2_with_specified_name(
+        &self,
+        nft_collection_cookie: &NftCollectionCookie,
+        nft_owner_cookie: &WalletCookie,
+        args: Option<CreateNftArgs>,
+        nft_name: &str
+    ) -> Result<NftCookie, TransportError> {
+        let CreateNftArgs {
+            verify_collection,
+            amount,
+        } = args.unwrap_or_default();
+
+        // Crate NFT
+        let mint_cookie = self.bench.with_mint().await?;
+        let nft_account_cookie = self
+            .bench
+            .with_tokens(&mint_cookie, &nft_owner_cookie.address, amount)
+            .await?;
+
+        let metadata_seeds = &[
+            b"metadata".as_ref(),
+            self.program_id.as_ref(),
+            &mint_cookie.address.as_ref(),
+        ];
+        let (metadata_key, _) = Pubkey::find_program_address(metadata_seeds, &self.program_id);
+
+        let name = nft_name.to_string();
         let symbol = "NFT".to_string();
         let uri = "URI".to_string();
 
