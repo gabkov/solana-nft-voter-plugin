@@ -102,7 +102,6 @@ pub fn cast_nft_vote<'a, 'b, 'c, 'info>(
                 .ok_or(NftVoterError::ArithMeticError)? as usize;
 
             if voted[voter_index] {
-                msg!("fos");
                 return Err(NftVoterError::NftAlreadyVoted.into());
             }
 
