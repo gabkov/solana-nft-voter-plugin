@@ -141,6 +141,9 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>, _collection: Pubkey)
 
     // Ensure all voting nfts in the batch are unique
     let mut unique_nft_mints = vec![];
+
+    let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
+
     // Set the votes back to 0 in the bitmap
     for (nft_info, nft_metadata_info) in ctx.remaining_accounts.iter().tuples() {
         let (_, _, nft_index) = resolve_nft_vote_weight_and_mint_and_nft_index(
@@ -150,8 +153,6 @@ pub fn relinquish_nft_vote(ctx: Context<RelinquishNftVote>, _collection: Pubkey)
             nft_metadata_info,
             &mut unique_nft_mints,
         )?;
-
-        let voted = voted_nfts.voted.view_bits_mut::<Lsb0>();
 
         let voter_index = nft_index
             .checked_sub(1)
