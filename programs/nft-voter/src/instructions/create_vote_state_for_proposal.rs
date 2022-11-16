@@ -31,7 +31,7 @@ pub fn create_vote_state_for_proposal(ctx: Context<CreateVoteStateForProposal>, 
     require!(
         voted_nfts.voted.len() == 0,
         NftVoterError::VoteStateAlreadyInitialized
-    );
+    ); // prevent reinitialization attack
     
     voted_nfts.voted = vec![0; (collection_size as usize + 7) / 8];
     voted_nfts.collection = collection;
