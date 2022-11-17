@@ -1,15 +1,14 @@
 {
-    "name": "@solana/governance-program-library",
-    "version": "0.16.7",
-    "description": "Client for Governance Program Library which is a set of extensions for Solana's spl-governance program.",
-    "author": "Solana Maintainers <maintainers@solana.foundation>",
+    "name": "@nation/nft-voter-plugin",
+    "version": "1.0.0",
+    "description": "Client for Nation NFT voting based on Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "license": "MIT",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
         "dist/**/*"
     ],
-    "repository": "https://github.com/solana-labs/governance-program-library",
+    "repository": "https://github.com/nation-io/nft-voter-plugin",
     "scripts": {
         "build": "tsc",
         "clean": "rm -rf dist",
