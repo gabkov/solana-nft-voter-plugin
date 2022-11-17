@@ -5,13 +5,19 @@ solana_version = "1.10.24"
 seeds = false
 
 [programs.localnet]
-nft_voter = "DXWGDLSxbeycBJQX2Z4sdDu8TbcqNMzHU25UtWdHUwQF"
+nft_voter = "GhkybELahfQMR2Afvk5WGm497ehokZ5EPA6Y2uKkpsmw"
+
+[programs.devnet]
+nft_voter = "GhkybELahfQMR2Afvk5WGm497ehokZ5EPA6Y2uKkpsmw"
+
+[programs.mainnet]
+nft_voter = "GhkybELahfQMR2Afvk5WGm497ehokZ5EPA6Y2uKkpsmw"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "mainnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

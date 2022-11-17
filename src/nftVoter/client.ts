@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 import { NftVoter, IDL } from './nft_voter';
 
 export const NFT_VOTER_ID = new PublicKey(
-  'DXWGDLSxbeycBJQX2Z4sdDu8TbcqNMzHU25UtWdHUwQF',
+  'GhkybELahfQMR2Afvk5WGm497ehokZ5EPA6Y2uKkpsmw',
 );
 
 export class NftVoterClient {
