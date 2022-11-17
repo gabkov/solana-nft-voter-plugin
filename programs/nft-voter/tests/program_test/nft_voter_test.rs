@@ -11,7 +11,7 @@ use spl_governance::instruction::cast_vote;
 use spl_governance::state::vote_record::{self, Vote, VoteChoice};
 
 use gpl_nft_voter::state::{
-    get_registrar_address, CollectionConfig, NftVoteRecord, Registrar,
+    get_registrar_address, CollectionConfig, Registrar,
 };
 
 use solana_program_test::ProgramTest;
@@ -64,12 +64,6 @@ impl Default for ConfigureCollectionArgs {
     fn default() -> Self {
         Self { weight: 1, size: 3 }
     }
-}
-
-#[derive(Debug, PartialEq)]
-pub struct NftVoteRecordCookie {
-    pub address: Pubkey,
-    pub account: NftVoteRecord,
 }
 
 pub struct CastNftVoteArgs {
@@ -639,13 +633,6 @@ impl NftVoterTest {
     #[allow(dead_code)]
     pub async fn get_registrar_account(&mut self, registrar: &Pubkey) -> Registrar {
         self.bench.get_anchor_account::<Registrar>(*registrar).await
-    }
-
-    #[allow(dead_code)]
-    pub async fn get_nft_vote_record_account(&mut self, nft_vote_record: &Pubkey) -> NftVoteRecord {
-        self.bench
-            .get_borsh_account::<NftVoteRecord>(nft_vote_record)
-            .await
     }
 
     #[allow(dead_code)]
