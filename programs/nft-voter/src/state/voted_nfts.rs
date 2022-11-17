@@ -3,6 +3,9 @@ use mpl_token_metadata::state::Metadata;
 
 use crate::{id, error::NftVoterError};
 
+/// Holds the already voted NFTs in a vec. The vec is read as a mutable bit slice so once an nft is voted the corresponding 
+/// bit at the index of the NFT id will be set to true.
+/// Example: [0, 0, 0, 1, 0] -> this means the NFT with id #05 voted
 #[account]
 #[derive(Debug, PartialEq, Default)]
 pub struct VotedNfts {

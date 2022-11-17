@@ -6,8 +6,7 @@ use anchor_lang::prelude::*;
 use bitvec::prelude::*;
 use itertools::Itertools;
 use spl_governance::state::{enums::ProposalState, governance, proposal};
-
-/// Disposes NftVoteRecord and recovers the rent from the accounts   
+  
 /// It can only be executed when voting on the target Proposal ended or voter withdrew vote from the Proposal
 ///
 /// Note: If a voter votes with NFT and transfers the token then in the current version of the program the new owner can't withdraw the vote

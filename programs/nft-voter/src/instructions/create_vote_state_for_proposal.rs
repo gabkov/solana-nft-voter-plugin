@@ -2,11 +2,12 @@ use crate::error::NftVoterError;
 use crate::state::*;
 use anchor_lang::prelude::*;
 
-
+/// Creates the vote state for each nft collection configured for each proposal
 #[derive(Accounts)]
 #[instruction(proposal: Pubkey, collection: Pubkey, collection_size: u32)]
 pub struct CreateVoteStateForProposal<'info> {
     
+    /// The account which holds the vec with the already voted nfts
     #[account(
         init_if_needed,
         seeds = [ b"voted-nfts".as_ref(),
