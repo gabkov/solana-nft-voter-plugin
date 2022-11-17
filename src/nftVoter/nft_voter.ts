@@ -314,7 +314,10 @@ export type NftVoter = {
         {
           "name": "votedNfts",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The account which holds the vec with the already voted nfts"
+          ]
         },
         {
           "name": "payer",
@@ -563,6 +566,11 @@ export type NftVoter = {
     },
     {
       "name": "votedNfts",
+      "docs": [
+        "Holds the already voted NFTs in a vec. The vec is read as a mutable bit slice so once an nft is voted the corresponding",
+        "bit at the index of the NFT id will be set to true.",
+        "Example: [0, 0, 0, 1, 0] -> this means the NFT with id #05 voted"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -1225,7 +1233,10 @@ export const IDL: NftVoter = {
         {
           "name": "votedNfts",
           "isMut": true,
-          "isSigner": false
+          "isSigner": false,
+          "docs": [
+            "The account which holds the vec with the already voted nfts"
+          ]
         },
         {
           "name": "payer",
@@ -1474,6 +1485,11 @@ export const IDL: NftVoter = {
     },
     {
       "name": "votedNfts",
+      "docs": [
+        "Holds the already voted NFTs in a vec. The vec is read as a mutable bit slice so once an nft is voted the corresponding",
+        "bit at the index of the NFT id will be set to true.",
+        "Example: [0, 0, 0, 1, 0] -> this means the NFT with id #05 voted"
+      ],
       "type": {
         "kind": "struct",
         "fields": [

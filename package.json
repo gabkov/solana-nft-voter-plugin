@@ -1,5 +1,5 @@
 {
-    "name": "@nation/nft-voter-plugin",
+    "name": "nft-voter-plugin-client",
     "version": "1.0.0",
     "description": "Client for Nation NFT voting plugin based on Governance Program Library which is a set of extensions for Solana's spl-governance program.",
     "license": "MIT",
