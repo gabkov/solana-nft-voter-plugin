@@ -1,4 +1,4 @@
-# nation nft-voter-plugin
+# solana nft-voter-plugin
 
 Based on [governance-program-library](https://github.com/solana-labs/governance-program-library) nft-voter plugin.
 
